@@ -7,10 +7,10 @@ metadata:
       schemaVersion: 2.3.0
     che.eclipse.org/devfile-source: |
       scm:
-        repo: https://github.com/mukesh1327/healthcare-quarkus-camel-kafka.git
+        repo: https://github.com/mukesh1327/quarkus-camel-razorpay-demo.git
         fileName: repo
       factory:
-        params: url=https://github.com/mukesh1327/healthcare-quarkus-camel-kafka.git
+        params: url=https://github.com/mukesh1327/quarkus-camel-razorpay-demo.git
 
   name: quarkus-camel-demo
 
@@ -60,5 +60,5 @@ spec:
     projects:
       - git:
           remotes:
-            origin: 'https://github.com/mukesh1327/healthcare-quarkus-camel-kafka.git'
+            origin: 'https://github.com/mukesh1327/quarkus-camel-razorpay-demo.git'
         name: quarkus-camel-demo
