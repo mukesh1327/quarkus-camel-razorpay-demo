@@ -1,0 +1,64 @@
+apiVersion: workspace.devfile.io/v1alpha2
+kind: DevWorkspace
+metadata:
+  annotations:
+    che.eclipse.org/che-editor: che-incubator/che-code/latest
+    che.eclipse.org/devfile: |
+      schemaVersion: 2.3.0
+    che.eclipse.org/devfile-source: |
+      scm:
+        repo: https://github.com/mukesh1327/healthcare-quarkus-camel-kafka.git
+        fileName: repo
+      factory:
+        params: url=https://github.com/mukesh1327/healthcare-quarkus-camel-kafka.git
+
+  name: quarkus-camel-demo
+
+spec:
+  contributions:
+    - name: ide
+      uri: http://devspaces-dashboard.app-devspaces-demo.svc.cluster.local:8080/dashboard/api/editors/devfile?che-editor=che-incubator/che-code/latest
+
+  routingClass: che
+  started: true
+
+  template:
+
+    components:
+      - name: quarkus-camel-demo
+        container:
+          image: 'registry.redhat.io/devspaces/udi-rhel9@sha256:cdb28f694cc9ceea8999f5ec2bad33a92c6d03e16814bfd08ccbb0c0fb1d815a'
+          sourceMapping: /projects
+          volumeMounts:
+            - name: m2
+              path: /home/user/.m2
+          env:
+              - name: QUARKUS_HTTP_HOST
+                value: 0.0.0.0
+              - name: KUBEDOCK_ENABLED
+                value: 'true'
+              - name: USE_JAVA21
+                value: 'true'
+              - name: OPENVSX_REGISTRY_URL
+                value: https://open-vsx.org/
+              - name: CHE_PLUGIN_REGISTRY_URL
+                value: https://open-vsx.org/
+          endpoints:
+              - exposure: none
+                name: debug
+                protocol: tcp
+                targetPort: 5005
+          cpuRequest: '1'
+          cpuLimit: '2'
+          memoryRequest: 4G
+          memoryLimit: 8G
+
+      - name: m2
+        volume:
+          size: 1G
+
+    projects:
+      - git:
+          remotes:
+            origin: 'https://github.com/mukesh1327/healthcare-quarkus-camel-kafka.git'
+        name: quarkus-camel-demo
