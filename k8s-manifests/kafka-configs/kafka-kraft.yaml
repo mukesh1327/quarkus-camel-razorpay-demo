@@ -13,7 +13,7 @@ spec:
     type: persistent-claim
     size: 5Gi
     kraftMetadata: shared
-    deleteClaim: false
+    deleteClaim: true
 
 ---
 
@@ -31,7 +31,7 @@ spec:
     type: persistent-claim
     size: 5Gi
     kraftMetadata: shared
-    deleteClaim: false
+    deleteClaim: true
 
 ---
 

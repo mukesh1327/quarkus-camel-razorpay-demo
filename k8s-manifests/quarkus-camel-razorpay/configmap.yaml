@@ -1,4 +1,4 @@
-kind: Service
+kind: ConfigMap
 apiVersion: v1
 metadata:
   name: quarkus-camel-razorpay
@@ -9,13 +9,7 @@ metadata:
     app.kubernetes.io/name: quarkus-camel-razorpay
     app.kubernetes.io/part-of: java-apps
     app.openshift.io/runtime: quarkus
-spec:
-  ports:
-    - name: 8080-tcp
-      protocol: TCP
-      port: 8080
-      targetPort: 8080
-  type: ClusterIP
-  selector:
-    app: quarkus-camel-razorpay
-    deployment: quarkus-camel-razorpay
+data:
+  APP_TITLE: welcome to quarkus camel razorpay demo
+  KAFKA_BOOTSTRAP: kafka_bootstrap_url
+type: Opaque

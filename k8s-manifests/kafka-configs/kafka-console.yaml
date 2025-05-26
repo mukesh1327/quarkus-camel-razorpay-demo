@@ -1,0 +1,11 @@
+kind: Console
+apiVersion: console.streamshub.github.com/v1alpha1
+metadata:
+  name: quarkus-camel-kafkaconsole
+  namespace: kafka-demo
+spec:
+  hostname: quarkus-camel-kafkaconsole.demoocp.lab.com
+  kafkaClusters:
+    - name: quarkus-camel
+      namespace: kafka-demo
+      listener: plain

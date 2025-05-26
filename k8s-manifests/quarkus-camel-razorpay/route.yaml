@@ -1,0 +1,24 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: quarkus-camel-razorpay
+  labels:
+    app: quarkus-camel-razorpay
+    app.kubernetes.io/component: quarkus-camel-razorpay
+    app.kubernetes.io/instance: quarkus-camel-razorpay
+    app.kubernetes.io/name: quarkus-camel-razorpay
+    app.kubernetes.io/part-of: java-apps
+    app.openshift.io/runtime: quarkus
+spec:
+  # host: 
+  subdomain: quarkus-camel-razorpay
+  to:
+    kind: Service
+    name: quarkus-camel-razorpay
+    weight: 100
+  port:
+    targetPort: 8080-tcp
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

@@ -9,12 +9,26 @@ import jakarta.ws.rs.core.MediaType;
 
 @Path("/")
 public class Welcome {
-    private static final String IMAGE_URL = "/images/noventiq-vp.png";
+    // private static final String IMAGE_URL = "/images/noventiq-vp.png";
 
     @ConfigProperty(name = "app.title")
     String appTitle;
 
+    @ConfigProperty(name = "app.image")
+    String welcomeImg;
+
+    // @GET
+    // @Produces(MediaType.TEXT_PLAIN)
+    // public String helloWorld() {
+    //     return "Hello, World! Check with endpoint /noventiq-vp-hello";
+    // }
+
+    public String getImageUrl() {
+        return welcomeImg;
+    }
+
     @GET
+    @Path("/")
     @Produces(MediaType.TEXT_HTML)
     public String getImageHtml() {
         return "<html>" +
@@ -22,8 +36,7 @@ public class Welcome {
                 "<body>" +
                 "<h1>" + appTitle + "</h1>" +
                 "<h2>App modernization</h2>" +
-                "<p> Welcome to demo</p>" +
-                "<img src='" + IMAGE_URL + "' alt='Image' width='500'/>" +
+                "<img src='" + welcomeImg + "' alt='Image' width='500'/>" +
                 "</body>" +
                 "</html>";
     }

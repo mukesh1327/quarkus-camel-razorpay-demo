@@ -1,0 +1,44 @@
+apiVersion: org.eclipse.che/v2
+kind: CheCluster
+metadata:
+  name: mydemo-devspaces
+  namespace: app-devspaces-demo
+spec:
+  components:
+    cheServer:
+      debug: false
+      logLevel: INFO
+    dashboard:
+      logLevel: ERROR
+    devWorkspace: {}
+    devfileRegistry: {}
+    imagePuller:
+      enable: false
+      spec: {}
+    metrics:
+      enable: true
+    pluginRegistry:
+      openVSXURL: 'https://open-vsx.org/'
+  containerRegistry: {}
+  devEnvironments:
+    startTimeoutSeconds: 300
+    security: {}
+    secondsOfRunBeforeIdling: -1
+    maxNumberOfWorkspacesPerUser: -1
+    containerBuildConfiguration:
+      openShiftSecurityContextConstraint: container-build
+    ignoredUnrecoverableEvents:
+      - FailedScheduling
+    defaultNamespace:
+      autoProvision: true
+      template: <username>-devspaces
+    secondsOfInactivityBeforeIdling: 1800
+    storage:
+      pvcStrategy: per-user
+  gitServices: {}
+  networking:
+    auth:
+      gateway:
+        configLabels:
+          app: che
+          component: che-gateway-config
