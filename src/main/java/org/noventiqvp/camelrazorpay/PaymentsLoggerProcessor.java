@@ -9,6 +9,7 @@ import java.util.Map;
 public class PaymentsLoggerProcessor implements Processor {
 
     @Override
+    @SuppressWarnings("unchecked")
     public void process(Exchange exchange) throws Exception {
         Map<String, Object> body = exchange.getMessage().getBody(Map.class);
 

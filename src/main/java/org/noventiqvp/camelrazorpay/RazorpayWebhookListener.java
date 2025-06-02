@@ -10,6 +10,7 @@ import java.util.Map;
 public class RazorpayWebhookListener extends RouteBuilder {
 
     @Override
+    @SuppressWarnings("unchecked")
     public void configure() throws Exception {
 
         from("platform-http:/payment-status?httpMethodRestrict=POST")

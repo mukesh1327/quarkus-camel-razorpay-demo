@@ -7,6 +7,9 @@ import org.apache.camel.builder.RouteBuilder;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @ApplicationScoped
 public class GetPaymentLinkStatus extends RouteBuilder {
@@ -20,6 +23,7 @@ public class GetPaymentLinkStatus extends RouteBuilder {
     String razorpaySecret;
 
     @Override
+    @SuppressWarnings("unchecked")
     public void configure() throws Exception {
 
         // Basic Auth header
@@ -30,30 +34,54 @@ public class GetPaymentLinkStatus extends RouteBuilder {
             .routeId("get-payment-link-for-status")
             .log("Fetching Razorpay payment link for plink_id: ${header.plink_id}")
 
-            // Set headers for Razorpay API call
             .setHeader(Exchange.HTTP_METHOD, constant("GET"))
             .setHeader("Authorization", constant(authHeader))
             .setHeader(Exchange.CONTENT_TYPE, constant("application/json"))
-
-            // Remove Camel internal headers that might interfere
             .removeHeaders("CamelHttp*")
 
-            // Call Razorpay API with path parameter plink_id
             .toD("https://api.razorpay.com/v1/payment_links/${header.plink_id}?bridgeEndpoint=true")
-
-            // Log the full response body
-            .log("Razorpay payment link response: ${body}")
-
-            // Unmarshal JSON so we can access specific fields
             .unmarshal().json()
 
-            // Log selected fields in pretty format
+            // Log extracted fields
             .process(new PaymentsLoggerProcessor())
 
-            // Set HTTP response code to 200
-            .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(200))
+            // Send PaymentStatusUpdated event to Kafka
+            .process(exchange -> {
+                Map<String, Object> body = exchange.getMessage().getBody(Map.class);
 
-            // Optional: marshal back to JSON if needed
+                Map<String, Object> notes = (Map<String, Object>) body.get("notes");
+                List<Map<String, Object>> payments = (List<Map<String, Object>>) body.get("payments");
+
+                // Prepare payload
+                Map<String, Object> payload = new HashMap<>();
+                payload.put("Amount", body.get("amount"));
+                payload.put("PaymentlinkId", body.get("id"));
+                payload.put("ReferenceId", body.get("reference_id"));
+                payload.put("Status", body.get("status"));
+
+                if (notes != null) {
+                    payload.put("Uhid", notes.get("UHID"));
+                }
+
+                // Use first payment if available
+                if (payments != null && !payments.isEmpty()) {
+                    Map<String, Object> firstPayment = payments.get(0);
+                    payload.put("PaymentId", firstPayment.get("payment_id"));
+                }
+
+                // Wrap in event envelope
+                Map<String, Object> eventWrapper = new HashMap<>();
+                eventWrapper.put("EventType", "PaymentStatusUpdated");
+                eventWrapper.put("EventEmittedAt", java.time.Instant.now().toString());
+                eventWrapper.put("EventData", payload);
+
+                // ✅ Serialize only eventWrapper, keep main route body untouched
+                String eventJson = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(eventWrapper);
+                
+                // Send to Kafka
+                exchange.getContext().createProducerTemplate().sendBody("kafka:razorpaydemo", eventJson);
+            })
+
             .marshal().json();
     }
 }

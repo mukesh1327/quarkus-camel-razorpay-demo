@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @ApplicationScoped
+@SuppressWarnings("unchecked")
 public class SendPayLink extends RouteBuilder {
 
     @Inject
@@ -76,7 +77,7 @@ public class SendPayLink extends RouteBuilder {
                 eventWrapper.put("EventEmittedAt", java.time.Instant.now().toString());
                 eventWrapper.put("EventData", payload);
 
-                exchange.getContext().createProducerTemplate().sendBody("kafka:razorpay-demo", eventWrapper);
+                exchange.getContext().createProducerTemplate().sendBody("kafka:razorpaydemo", eventWrapper);
             })
 
             .setHeader("Authorization", constant(authHeader))
@@ -109,7 +110,9 @@ public class SendPayLink extends RouteBuilder {
                 eventWrapper.put("EventEmittedAt", java.time.Instant.now().toString());
                 eventWrapper.put("EventData", payload);
 
-                exchange.getContext().createProducerTemplate().sendBody("kafka:razorpay-demo", eventWrapper);
+                String eventJson = exchange.getContext().getTypeConverter().convertTo(String.class, eventWrapper);
+
+                exchange.getContext().createProducerTemplate().sendBody("kafka:razorpaydemo", eventJson);
             })
 
             // Optional: Log structured output
