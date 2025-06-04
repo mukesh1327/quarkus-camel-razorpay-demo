@@ -21,8 +21,8 @@ public class PaymentsLoggerProcessor implements Processor {
         
         Map<String, Object> notes = (Map<String, Object>) body.get("notes");
         if (notes != null) {
-            logBuilder.append("UHID: ").append(json(notes.get("UHID"))).append("\n");
-            logBuilder.append("Hosp_code: ").append(json(notes.get("hosp_code"))).append("\n");
+            logBuilder.append("Cid: ").append(json(notes.get("CID"))).append("\n");
+            logBuilder.append("shop_code: ").append(json(notes.get("shop_code"))).append("\n");
             logBuilder.append("deposit_type_code: ").append(json(notes.get("deposit_type_code"))).append("\n");
             logBuilder.append("source: ").append(json(notes.get("source"))).append("\n");
         }

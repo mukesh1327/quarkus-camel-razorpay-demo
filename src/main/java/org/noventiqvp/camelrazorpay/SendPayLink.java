@@ -5,6 +5,7 @@ import jakarta.inject.Inject;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Base64;
 import java.util.HashMap;
@@ -24,6 +25,8 @@ public class SendPayLink extends RouteBuilder {
 
     @Override
     public void configure() throws Exception {
+        
+        ObjectMapper mapper = new ObjectMapper();
 
         // Basic Auth header
         String authHeader = "Basic " + Base64.getEncoder()
@@ -66,18 +69,21 @@ public class SendPayLink extends RouteBuilder {
                 payload.put("CustomerContact", ((Map<?, ?>) input.get("customer")).get("contact"));
 
                 if (notes != null) {
-                    payload.put("Uhid", notes.get("UHID"));
-                    payload.put("HospitalCode", notes.get("hosp_code"));
+                    payload.put("Cid", notes.get("CID"));
+                    payload.put("HospitalCode", notes.get("shop_code"));
                     payload.put("Source", notes.get("source"));
                     payload.put("DepositTypeCode", notes.get("deposit_type_code"));
                 }
 
-                Map<String, Object> eventWrapper = new HashMap<>();
-                eventWrapper.put("EventType", "PaymentLinkRequestSent");
-                eventWrapper.put("EventEmittedAt", java.time.Instant.now().toString());
-                eventWrapper.put("EventData", payload);
+                Map<String, Object> event = new HashMap<>();
+                event.put("EventType", "PaymentLinkRequestSent");
+                event.put("EventEmittedAt", java.time.Instant.now().toString());
+                event.put("EventData", payload);
+                String eventJson = mapper.writeValueAsString(event);
 
-                exchange.getContext().createProducerTemplate().sendBody("kafka:razorpaydemo", eventWrapper);
+                log.info("Sending JSON to Kafka: {}", eventJson);
+
+                exchange.getContext().createProducerTemplate().sendBody("kafka:razorpaytopic", eventJson);
             })
 
             .setHeader("Authorization", constant(authHeader))
@@ -99,20 +105,22 @@ public class SendPayLink extends RouteBuilder {
                 payload.put("Status", body.get("status"));
 
                 if (notes != null) {
-                    payload.put("Uhid", notes.get("UHID"));
-                    payload.put("HospitalCode", notes.get("hosp_code"));
+                    payload.put("Cid", notes.get("CID"));
+                    payload.put("HospitalCode", notes.get("shop_code"));
                     payload.put("Source", notes.get("source"));
                     payload.put("DepositTypeCode", notes.get("deposit_type_code"));
                 }
 
-                Map<String, Object> eventWrapper = new HashMap<>();
-                eventWrapper.put("EventType", "PaymentLinkSent");
-                eventWrapper.put("EventEmittedAt", java.time.Instant.now().toString());
-                eventWrapper.put("EventData", payload);
+                Map<String, Object> event = new HashMap<>();
+                event.put("EventType", "PaymentLinkSent");
+                event.put("EventEmittedAt", java.time.Instant.now().toString());
+                event.put("EventData", payload);
 
-                String eventJson = exchange.getContext().getTypeConverter().convertTo(String.class, eventWrapper);
+                String eventJson = mapper.writeValueAsString(event);
 
-                exchange.getContext().createProducerTemplate().sendBody("kafka:razorpaydemo", eventJson);
+                log.info("Sending JSON to Kafka: {}", eventJson);
+
+                exchange.getContext().createProducerTemplate().sendBody("kafka:razorpaytopic", eventJson);
             })
 
             // Optional: Log structured output

@@ -102,15 +102,26 @@ Using short URL (provided in response) make a payment in razorpay test mode with
 
 Test payment examples values for credit or debit card payments and OTP are all available [RazorPay Official documents](https://razorpay.com/docs/payments/payments/test-card-details/)  
 
+This test payment requires (Random numbers)
+ - A test phone number (9089679010)
+ - A test OTP (788990) or Skip OTP
+ - A test card number (Card = 4386 2894 0766 0153	 Expiry = 12/30   CVV = 900)
 
 **Class GetPaymentLinkStatus**
 
 ```shell script
 curl --location 'https://localhost:8080/get-payment-link/${PLINK_ID}'
 ```
- 
+
 This plink_id is got from the response of /create-payment-link endpoint
 
+
+**Create Deposit**
+The create deposit consumes that topic for the events (PaymentStatusUpdated) 
+When GetPaymentLinkStatus is success with status:paid in kafka topic (razorpaytopic) this Calls the /create-receipt API via HTTP POST. If the post request is completed with 200 response this Emits DepositCreated event on success.
+
+Where the logic for receipt generation is within this source code itself (For demo).
+ 
 ## Build container image for this application (podman is used)
 
 ```shell script

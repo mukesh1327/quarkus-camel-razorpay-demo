@@ -35,7 +35,7 @@ public class ReceiptResource {
         }
 
         // Generate receipt ID
-        String hospCode = request.hosp_code != null ? request.hosp_code : "XXX";
+        String hospCode = request.shop_code != null ? request.shop_code : "XXX";
         String financialYear = getFinancialYear();
         String receiptNumber = String.format("%04d", new Random().nextInt(10000));
         String receiptId = String.format("%s/%s/DP/%s", hospCode, financialYear, receiptNumber);

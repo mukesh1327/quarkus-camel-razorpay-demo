@@ -5,6 +5,7 @@ import jakarta.inject.Inject;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Base64;
 import java.util.HashMap;
@@ -25,7 +26,8 @@ public class GetPaymentLinkStatus extends RouteBuilder {
     @Override
     @SuppressWarnings("unchecked")
     public void configure() throws Exception {
-
+        
+        ObjectMapper mapper = new ObjectMapper();
         // Basic Auth header
         String authHeader = "Basic " + Base64.getEncoder()
             .encodeToString((razorpayKey + ":" + razorpaySecret).getBytes());
@@ -60,7 +62,10 @@ public class GetPaymentLinkStatus extends RouteBuilder {
                 payload.put("Status", body.get("status"));
 
                 if (notes != null) {
-                    payload.put("Uhid", notes.get("UHID"));
+                    payload.put("Cid", notes.get("CID"));
+                    payload.put("DepositTypeCode", notes.get("deposit_type_code"));
+                    payload.put("ShopCode", notes.get("shop_code"));
+                    payload.put("Source", notes.get("source"));
                 }
 
                 // Use first payment if available
@@ -70,16 +75,18 @@ public class GetPaymentLinkStatus extends RouteBuilder {
                 }
 
                 // Wrap in event envelope
-                Map<String, Object> eventWrapper = new HashMap<>();
-                eventWrapper.put("EventType", "PaymentStatusUpdated");
-                eventWrapper.put("EventEmittedAt", java.time.Instant.now().toString());
-                eventWrapper.put("EventData", payload);
+                Map<String, Object> event = new HashMap<>();
+                event.put("EventType", "PaymentStatusUpdated");
+                event.put("EventEmittedAt", java.time.Instant.now().toString());
+                event.put("EventData", payload);
 
-                // ✅ Serialize only eventWrapper, keep main route body untouched
-                String eventJson = new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(eventWrapper);
+                // Serialize only eventWrapper, keep main route body untouched
+                String eventJson = mapper.writeValueAsString(event);
+
+                log.info("Sending JSON to Kafka: {}", eventJson);
                 
                 // Send to Kafka
-                exchange.getContext().createProducerTemplate().sendBody("kafka:razorpaydemo", eventJson);
+                exchange.getContext().createProducerTemplate().sendBody("kafka:razorpaytopic", eventJson);
             })
 
             .marshal().json();
